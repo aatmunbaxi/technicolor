@@ -49,6 +49,16 @@ of these themes with =(technicolor-get-color 'foreground)= while they are loaded
 Note we have reproduced a subset of the default config provided by technicolor
 for these themes.
 
+By default, the above configurations will match all doom themes and all modus themes, but you can set per-theme rules on color mappings from the universal palette by changing the regex.
+For example, if we wanted different rules for =modus-operandi-*= and =modus-vivendi-*=, we could write
+#+begin_src emacs-lisp
+  ' ...
+    ("^modus-operandi" modus-themes-get-color-value '((...)))
+    (("^modus-vivendi" modus-themes-get-color-value '((...)))
+     ...)
+    #+end_src
+and the rules we specify would apply accordingly.
+
 You may extend the value of =technicolor-colors= to any symbols representing
 colors that you'd like to use. Provided you give appropriate mappings for each
 theme, technicolor will find them.
