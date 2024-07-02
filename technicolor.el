@@ -79,8 +79,8 @@ you want the color `red' in `technicolor-colors' to map to
 
 ;;;###autoload
 (defvar technicolor-catppuccin-themes-data
-  '("^catppuccin*" technicolor--get-catppuccin-color '((foreground . text)
-                                                       (background . base)))
+  '("catppuccin" technicolor--get-catppuccin-color '((foreground . text)
+                                                     (background . base)))
   "Default configuration for `catppuccin-themes'.
 Please note that these themes use some colorful names for all the other colors,
 so heavy customization might be needed.")
@@ -92,11 +92,10 @@ in all themes matched in `technicolor-themes-alist'."
   :group 'technicolor)
 
 (defun technicolor--get-catppuccin-color (color)
-  (if (featurep 'catppuccin-theme)
-      (let ((ctp-theme-colors (intern
-                               (concat "catppuccin-" (symbol-name catppuccin-flavor) "-colors"))))
-        (alist-get color (eval ctp-theme-colors))))
-  (user-error (format "catppuccin-theme not installed")))
+  (let ((ctp-theme-colors (intern
+                           (concat "catppuccin-" (symbol-name catppuccin-flavor) "-colors"))))
+    (alist-get color (eval ctp-theme-colors)))
+  )
 
 (defun technicolor--get-theme-data (theme)
   (let ((theme-name (symbol-name theme))
