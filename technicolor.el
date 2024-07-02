@@ -47,29 +47,44 @@ to the names of the colors you want those to correspond to.
 
 For example in a theme `foo', with accessor `foo-get-color', if
 you want the color `red' in `technicolor-colors' to map to
-`foo-bright-red' (or whatever else), the entry for `foo' might be
+`foo-bright-red', the entry for `foo' might be
 
 `'(\"^foo-.*\" foo-get-color ((red . foo-bright-red)))'"
   :type '(list (list symbol))
   :group 'technicolor)
 
 (defvar technicolor-doom-entry
-  '("^doom-.*" doom-color nil)
-  "Default configuration for `doom-themes'")
+  '("^doom-.*" doom-color ((foreground . fg)
+                           (background . bg)))
+  "Default configuration for `doom-themes'.")
 
 (defvar technicolor-modus-themes-data
-  '("^modus-.*" modus-themes-get-color-value nil)
-  "Default configuration for `modus-themes'")
+  '("^modus-.*" modus-themes-get-color-value '((foreground . fg-main)
+                                               (background . bg-main)))
+  "Default configuration for `modus-themes'.")
 
 (defvar technicolor-ef-themes-data
-  '("^ef-.*" ef-themes-get-color-value nil)
-  "Default configuration for `ef-themes'")
+  '("^ef-.*" ef-themes-get-color-value '((foreground . fg-main
+                                          (background . bg-main))))
+
+  "Default configuration for `ef-themes'.")
+
+(defvar technicolor-standard-themes-data
+  '("^ef-.*" standard-themes-get-color-value '((foreground . fg-main)
+                                               (background . bg-main))))
 
 (defcustom technicolor-colors nil
   "List of colors in universal palette that can be sensibly accessed
-  in all themes matched in `technicolor-themes-alist'."
+in all themes matched in `technicolor-themes-alist'."
   :type '(list symbol)
   :group 'technicolor)
+
+(defun technicolor--get-catppuccin-color (color)
+  (if (require 'catppuccin-theme nil t)
+      (let ((ctp-theme-colors (intern
+                               (concat "catppuccin-" (symbol-name catppuccin-flavor) "-colors"))))
+        (alist-get color (eval ctp-theme-colors))))
+  (user-error (format "catppuccin-theme not installed")))
 
 (defun technicolor--get-theme-data (theme)
   (let ((theme-name (symbol-name theme))
@@ -81,20 +96,18 @@ you want the color `red' in `technicolor-colors' to map to
     (if data
         data (user-error "%s has no associated data in `technicolor-themes'" theme))))
 
+;;;###autoload
 (defun technicolor-get-color (color)
-  "Get COLOR from current theme.
+  "Get COLOR from current theme as specified by `technicolor-themes'.
 
-  COLOR should appear in `technicolor-colors'. When THEME
-  is `nil', get COLOR from currently enabled theme."
+  COLOR should appear in `technicolor-colors' or be universally
+available in all themes known to technicolor."
   (pcase-let* ((`(_  ,accessor ,color-mapping) (technicolor--get-theme-data (car custom-enabled-themes)))
                (theme-color (if (alist-get color color-mapping)
                                 (alist-get color color-mapping)
                               color)))
     (when (and (memq color technicolor-colors) accessor)
       (funcall accessor theme-color))))
-
-
-
 
 
 (provide 'technicolor)
