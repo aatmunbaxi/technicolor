@@ -92,7 +92,7 @@ in all themes matched in `technicolor-themes-alist'."
   :group 'technicolor)
 
 (defun technicolor--get-catppuccin-color (color)
-  (if (require 'catppuccin-theme nil t)
+  (if (featurep 'catppuccin-theme)
       (let ((ctp-theme-colors (intern
                                (concat "catppuccin-" (symbol-name catppuccin-flavor) "-colors"))))
         (alist-get color (eval ctp-theme-colors))))
@@ -102,7 +102,6 @@ in all themes matched in `technicolor-themes-alist'."
   (let ((theme-name (symbol-name theme))
         (data nil))
     (pcase-dolist  (`(,theme-rx ,theme-color-fun ,theme-mapping) technicolor-themes)
-      (message (format "%s" `(,theme-rx ,theme-color-fun ,theme-mapping)))
       (when (string-match theme-rx theme-name)
         (setq data `(,theme-rx ,theme-color-fun ,theme-mapping))))
     (if data
