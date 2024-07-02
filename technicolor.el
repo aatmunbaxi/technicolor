@@ -42,8 +42,13 @@ Each entry in this list should contain the following:
 
 1. Regex matching a theme or class of themes
 2. Unqouted symbol of function that will access colors
+   An accessor should take in the symbol representing a color
+and return the string representation of that color or nil (or some fallback)
+if the color symbol is not found int he theme palette.
 3. An alist of colors that need be mapped from `technicolor-colors'
 to the names of the colors you want those to correspond to.
+If all your themes implement a certain color, then you can omit
+them from this list for each entry.
 
 For example in a theme `foo', with accessor `foo-get-color', if
 you want the color `red' in `technicolor-colors' to map to
@@ -61,25 +66,25 @@ you want the color `red' in `technicolor-colors' to map to
 
 ;;;###autoload
 (defvar technicolor-modus-themes-data
-  '("^modus-.*" modus-themes-get-color-value '((foreground . fg-main)
-                                               (background . bg-main)))
+  '("^modus-.*" modus-themes-get-color-value ((foreground . fg-main)
+                                              (background . bg-main)))
   "Default configuration for `modus-themes'.")
 
 ;;;###autoload
 (defvar technicolor-ef-themes-data
-  '("^ef-.*" ef-themes-get-color-value '((foreground . fg-main)
-                                         (background . bg-main)))
+  '("^ef-.*" ef-themes-get-color-value ((foreground . fg-main)
+                                        (background . bg-main)))
   "Default configuration for `ef-themes'.")
 
 ;;;###autoload
 (defvar technicolor-standard-themes-data
-  '("^ef-.*" standard-themes-get-color-value '((foreground . fg-main)
-                                               (background . bg-main)))
+  '("^ef-.*" standard-themes-get-color-value ((foreground . fg-main)
+                                              (background . bg-main)))
   "Default configuration for `standard-themes'.")
 
 ;;;###autoload
 (defvar technicolor-catppuccin-themes-data
-  '("catppuccin" technicolor--get-catppuccin-color '((foreground . text)
+  '("^catppuccin" technicolor--get-catppuccin-color ((foreground . text)
                                                      (background . base)))
   "Default configuration for `catppuccin-themes'.
 Please note that these themes use some colorful names for all the other colors,
@@ -104,7 +109,8 @@ in all themes matched in `technicolor-themes-alist'."
       (when (string-match theme-rx theme-name)
         (setq data `(,theme-rx ,theme-color-fun ,theme-mapping))))
     (if data
-        data (user-error "%s has no associated data in `technicolor-themes'" theme))))
+        data
+      (user-error "%s has no associated data in `technicolor-themes'" theme))))
 
 ;;;###autoload
 (defun technicolor-get-color (color)
@@ -116,8 +122,8 @@ available in all themes known to technicolor."
                (theme-color (if (alist-get color color-mapping)
                                 (alist-get color color-mapping)
                               color)))
-    (when (and (memq color technicolor-colors) accessor)
-      (funcall accessor theme-color))))
+    (message (format "%s" theme-color))
+    (funcall accessor theme-color)))
 
 
 (provide 'technicolor)
