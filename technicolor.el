@@ -54,7 +54,7 @@ you want the color `red' in `technicolor-colors' to map to
   :group 'technicolor)
 
 ;;;###autoload
-(defvar technicolor-doom-entry
+(defvar technicolor-doom-themes-data
   '("^doom-.*" doom-color ((foreground . fg)
                            (background . bg)))
   "Default configuration for `doom-themes'.")
