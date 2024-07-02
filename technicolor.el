@@ -122,7 +122,6 @@ available in all themes known to technicolor."
                (theme-color (if (alist-get color color-mapping)
                                 (alist-get color color-mapping)
                               color)))
-    (message (format "%s" theme-color))
     (funcall accessor theme-color)))
 
 
