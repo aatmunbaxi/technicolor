@@ -53,32 +53,29 @@ you want the color `red' in `technicolor-colors' to map to
   :type '(list (list symbol))
   :group 'technicolor)
 
-;;;###autoload
 (defvar technicolor-doom-themes-data
   '("^doom-.*" doom-color ((foreground . fg)
                            (background . bg)))
   "Default configuration for `doom-themes'.")
 
-;;;###autoload
 (defvar technicolor-modus-themes-data
   '("^modus-.*" modus-themes-get-color-value '((foreground . fg-main)
                                                (background . bg-main)))
   "Default configuration for `modus-themes'.")
-;;;###autoload
+
 (defvar technicolor-ef-themes-data
   '("^ef-.*" ef-themes-get-color-value '((foreground . fg-main)
                                          (background . bg-main)))
   "Default configuration for `ef-themes'.")
-;;;###autoload
+
 (defvar technicolor-standard-themes-data
   '("^ef-.*" standard-themes-get-color-value '((foreground . fg-main)
                                                (background . bg-main)))
   "Default configuration for `standard-themes'.")
 
-;;;###autoload
 (defvar technicolor-catppuccin-themes-data
-  '("^ef-.*" technicolor--get-catppuccin-color '((foreground . text)
-                                                 (background . base)))
+  '("^catppuccin*" technicolor--get-catppuccin-color '((foreground . text)
+                                                       (background . base)))
   "Default configuration for `catppuccin-themes'.
 Please note that these themes use some colorful names for all the other colors,
 so heavy customization might be needed.")
