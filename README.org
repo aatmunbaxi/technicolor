@@ -5,13 +5,54 @@
 * The Problem
 Many custom emacs themes provide their own color palettes as a variable or
 collection of variables. Unfortunately for users who enjoy using theme-specific
-colors in various parts of emacs, there is no universal way to access these
-colors programmatically. Some theme collections define their own functions to
+colors in various parts of emacs, there's no universal way to access these
+colors in elisp. Some theme collections like =doom-themes= and [[https://github.com/protesilaos][Prot's]] themes define their own functions to
 access colors via elisp, but these solutions are not homogeneous across theme
 collections.
 
-=technicolor= attempts to partially solve this problem by allowing the user to
-define a "universal" palette which contains colors that all the themes they
-would like to use in elisp implement. Then the user may use technicolor to
-access the colors in the universal palette, which would then access the correct
-theme-dependent color that the user specifies.
+If a user wants to access only a few colors in elisp from a variety of theme
+palettes, they must adapt their elisp for each of those themes in order for the
+code to adapt to theme changes properly. =technicolor= offer a partial solution,
+allowing the user to define a minimal "universal" palette of colors they'd like
+to access, and an API to access them.
+
+* Using =technicolor=
+technicolor comes with some preloaded configuration associated to a few popular
+themes and theme packs, including doom themes, the modus-themes, ef-themes, and
+standard-themes of Prot, and catppuccin themes. These are a good starting point
+for configuration, but the user should still peer into the color palettes of the
+themes they have and determine how they want to map colors. Here is an example:
+
+Let's say you want to access the foreground color in elisp for the doom themes
+and all of Prot's themes. You can set these colors in the =technicolor-colors=
+list:
+#+begin_src emacs-lisp
+  (setq technicolor-colors '(foreground))
+#+end_src
+The theme's above have the following accessors we can use:
+- Doom themes :: =doom-color=
+- Prot themes :: =*-themes-get-color-value=
+
+Now the doom themes use the symbols =fg= and for foreground, while Prot uses
+=fg-main=, so we have to map our "universal" palette name to these values in their
+respective configurations.
+
+Here is what that will look like:
+#+begin_src emacs-lisp
+  (setq technicolor-themes '(("^doom-.*" doom-color '((foreground . fg)))
+                             ("^modus-.*" modus-themes-get-color-value
+                                                    '((foreground . fg-main)))
+                             ...))
+#+end_src
+After this variable has been set, you can now access the foreground color of any
+of these themes with =(technicolor-get-color 'foreground)= while they are loaded.
+Note we have reproduced a subset of the default config provided by technicolor
+for these themes.
+
+You may extend the value of =technicolor-colors= to any symbols representing
+colors that you'd like to use. Provided you give appropriate mappings for each
+theme, technicolor will find them.
+
+Note that if /all/ of your themes provide the same symbol for a certain color, as
+is common for generic colors like "red", "blue", etc, you don't need to specify
+the mapping from the universal palette!
