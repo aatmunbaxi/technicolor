@@ -9,7 +9,7 @@
 ;; Version: 0.0.1
 ;; Keywords:  convenience
 ;; Homepage: https://github.com/aatmunbaxi/technicolor
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "25.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -34,41 +34,66 @@
   "Almost univeral color palette access."
   :group 'technicolor)
 
-(defcustom technicolor-themes-alist nil
-  "alist of technicolor themes and their accessors.
+;; TODO make this one big variable like in fontaine?
+(defcustom technicolor-themes nil
+  "List of technicolor themes, their accessors, and palette mappings.
 
-The CAR of each element should be a regexp that will match
-the name of a theme or group of themes, whose palette accessor is the CDR
-of the element."
-  :type '(alist :key-type regexp :value-type function)
+Each entry in this list should contain the following:
+
+1. Regex matching a theme or class of themes
+2. Unqouted symbol of function that will access colors
+3. An alist of colors that need be mapped from `technicolor-colors'
+to the names of the colors you want those to correspond to.
+
+For example in a theme `foo', with accessor `foo-get-color', if
+you want the color `red' in `technicolor-colors' to map to
+`foo-bright-red' (or whatever else), the entry for `foo' might be
+
+`'(\"^foo-.*\" foo-get-color ((red . foo-bright-red)))'"
+  :type '(list (list symbol))
   :group 'technicolor)
+
+(defvar technicolor-doom-entry
+  '("^doom-.*" doom-color nil)
+  "Default configuration for `doom-themes'")
+
+(defvar technicolor-modus-themes-data
+  '("^modus-.*" modus-themes-get-color-value nil)
+  "Default configuration for `modus-themes'")
+
+(defvar technicolor-ef-themes-data
+  '("^ef-.*" ef-themes-get-color-value nil)
+  "Default configuration for `ef-themes'")
 
 (defcustom technicolor-colors nil
   "List of colors in universal palette that can be sensibly accessed
-in all themes matched in `technicolor-themes-alist'"
+  in all themes matched in `technicolor-themes-alist'."
   :type '(list symbol)
   :group 'technicolor)
 
-(defun technicolor--get-theme-accessor (theme)
+(defun technicolor--get-theme-data (theme)
   (let ((theme-name (symbol-name theme))
-        (get-color-function nil))
-    (pcase-dolist (`(,re . ,fun) technicolor-themes-alist)
-      (when (string-match re theme-name)
-        (message theme-name)
-        (setq get-color-function fun)))
-    get-color-function))
+        (data nil))
+    (pcase-dolist  (`(,theme-rx ,theme-color-fun ,theme-mapping) technicolor-themes)
+      (message (format "%s" `(,theme-rx ,theme-color-fun ,theme-mapping)))
+      (when (string-match theme-rx theme-name)
+        (setq data `(,theme-rx ,theme-color-fun ,theme-mapping))))
+    (if data
+        data (user-error "%s has no associated data in `technicolor-themes'" theme))))
 
-
-
-
-(defun technicolor-get-color (color &rest arguments)
+(defun technicolor-get-color (color)
   "Get COLOR from current theme.
 
-COLOR should appear in `technicolor-colors'. When THEME
-is `nil', get COLOR from currently enabled theme."
-  (if (memq color technicolor-colors)
-      (funcall (technicolor--get-theme-accessor (car custom-enabled-themes)) color arguments)
-    (user-error  "Color %s not in `technicolor-colors'" color)))
+  COLOR should appear in `technicolor-colors'. When THEME
+  is `nil', get COLOR from currently enabled theme."
+  (pcase-let* ((`(_  ,accessor ,color-mapping) (technicolor--get-theme-data (car custom-enabled-themes)))
+               (theme-color (if (alist-get color color-mapping)
+                                (alist-get color color-mapping)
+                              color)))
+    (when (and (memq color technicolor-colors) accessor)
+      (funcall accessor theme-color))))
+
+
 
 
 
