@@ -73,6 +73,13 @@ you want the color `red' in `technicolor-colors' to map to
                                                (background . bg-main)))
   "Default configuration for `standard-themes'.")
 
+(defvar technicolor-catppuccin-themes-data
+  '("^ef-.*" technicolor--get-catppuccin-color '((foreground . text)
+                                                 (background . base)))
+  "Default configuration for `catppuccin-themes'.
+Please note that these themes use some colorful names for all the other colors,
+so heavy customization might be needed.")
+
 (defcustom technicolor-colors nil
   "List of colors in universal palette that can be sensibly accessed
 in all themes matched in `technicolor-themes-alist'."
