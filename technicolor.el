@@ -66,12 +66,12 @@ you want the color `red' in `technicolor-colors' to map to
 (defvar technicolor-ef-themes-data
   '("^ef-.*" ef-themes-get-color-value '((foreground . fg-main
                                           (background . bg-main))))
-
   "Default configuration for `ef-themes'.")
 
 (defvar technicolor-standard-themes-data
   '("^ef-.*" standard-themes-get-color-value '((foreground . fg-main)
-                                               (background . bg-main))))
+                                               (background . bg-main)))
+  "Default configuration for `standard-themes'.")
 
 (defcustom technicolor-colors nil
   "List of colors in universal palette that can be sensibly accessed
