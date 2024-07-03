@@ -265,7 +265,14 @@ Return list of colors in gradient of length STEP-NUMS."
 ;;;###autoload
 (defun technicolor-desaturate (color alpha)
   "Desturate COLOR by ALPHA percent."
-  (technicolor-saturate color (- alpha)))
+  (cond ((listp color)
+         (mapcar (lambda (col) (technicolor-saturate col alpha)) color))
+        ((and color (symbolp color))
+         (technicolor--with-technicolor-color color
+           (technicolor--color-to-hex
+            (color-desaturate-name
+             (technicolor-get-color color) alpha))))
+        ((string-prefix-p "#" color) (technicolor--color-to-hex (color-darken-name color alpha)))))
 
 
 ;; TODO requiring `cl-lib' for just one function is overkill
