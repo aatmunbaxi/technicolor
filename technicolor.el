@@ -217,9 +217,9 @@ of either of the above."
          (mapcar (lambda (col) (technicolor-darken col alpha)) color))
         ((and color (symbolp color))
          (technicolor--with-technicolor-color color
-           (technicolor--color-to-hex
-            (color-darken-name
-             (technicolor-get-color color) alpha))))
+                                              (technicolor--color-to-hex
+                                               (color-darken-name
+                                                (technicolor-get-color color) alpha))))
         ((string-prefix-p "#" color) (technicolor--color-to-hex (color-darken-name color alpha)))))
 
 
@@ -235,7 +235,7 @@ of either of the above."
 (defun technicolor-complement (color)
   "Return hexadecimal complement of COLOR."
   (technicolor--with-technicolor-color color
-    (technicolor--color-to-hex (color-complement (technicolor-get-color color)))))
+                                       (technicolor--color-to-hex (color-complement (technicolor-get-color color)))))
 
 ;;;###autoload
 (defun technicolor-gradient (start stop step-nums)
@@ -243,11 +243,11 @@ of either of the above."
 
 Return list of colors in gradient of length STEP-NUMS."
   (technicolor--with-technicolor-colors  `(,start ,stop)
-    (let ((-start (technicolor-get-color start))
-          (-stop (technicolor-get-color stop)))
-      (mapcar  #'technicolor--color-to-hex
-               (color-gradient (color-name-to-rgb -start)
-                               (color-name-to-rgb -stop) step-nums)))))
+                                         (let ((-start (technicolor-get-color start))
+                                               (-stop (technicolor-get-color stop)))
+                                           (mapcar  #'technicolor--color-to-hex
+                                                    (color-gradient (color-name-to-rgb -start)
+                                                                    (color-name-to-rgb -stop) step-nums)))))
 
 ;;;###autoload
 (defun technicolor-saturate (color alpha)
@@ -256,9 +256,9 @@ Return list of colors in gradient of length STEP-NUMS."
          (mapcar (lambda (col) (technicolor-saturate col alpha)) color))
         ((and color (symbolp color))
          (technicolor--with-technicolor-color color
-           (technicolor--color-to-hex
-            (color-saturate-name
-             (technicolor-get-color color) alpha))))
+                                              (technicolor--color-to-hex
+                                               (color-saturate-name
+                                                (technicolor-get-color color) alpha))))
         ((string-prefix-p "#" color) (technicolor--color-to-hex (color-darken-name color alpha)))))
 
 
@@ -269,15 +269,16 @@ Return list of colors in gradient of length STEP-NUMS."
          (mapcar (lambda (col) (technicolor-saturate col alpha)) color))
         ((and color (symbolp color))
          (technicolor--with-technicolor-color color
-           (technicolor--color-to-hex
-            (color-desaturate-name
-             (technicolor-get-color color) alpha))))
+                                              (technicolor--color-to-hex
+                                               (color-desaturate-name
+                                                (technicolor-get-color color) alpha))))
         ((string-prefix-p "#" color) (technicolor--color-to-hex (color-darken-name color alpha)))))
 
 
 ;; TODO requiring `cl-lib' for just one function is overkill
 ;; either lean into it or rework the function
 ;; stolen from `doom-themes'
+;;;###autoload
 (defun technicolor-blend (color1 color2 alpha)
   "Blend two colors COLOR1 and COLOR2 by percentage ALPHA."
   (when (and color1 color2)
