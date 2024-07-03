@@ -1,14 +1,15 @@
 #+title: technicolor
 #+subtitle: (almost) universal programmatic color palette access
 #+author: Aatmun Baxi
+Programmatic access to custom theme color palettes.
 
 * The Problem
 Many custom emacs themes provide their own color palettes as a variable or
-collection of variables. Unfortunately for users who enjoy using theme-specific
-colors in various parts of emacs, there's no universal way to access these
-colors in elisp. Some theme collections like =doom-themes= and [[https://github.com/protesilaos][Prot's]] themes define their own functions to
-access colors via elisp, but these solutions are not homogeneous across theme
-collections.
+collection of variables. Unfortunately, for users who enjoy using theme-specific
+colors in various parts of emacs, there's no universal way (that I know of) to
+access these colors in elisp. Some theme collections like =doom-themes= and [[https://github.com/protesilaos][Prot's]]
+themes define their own functions to access colors via elisp, but these
+solutions are not homogeneous across theme collections.
 
 If a user wants to access only a few colors in elisp from a variety of theme
 palettes, they must adapt their elisp for each of those themes in order for the
@@ -66,3 +67,16 @@ theme, technicolor will find them.
 Note that if /all/ of your themes provide the same symbol for a certain color, as
 is common for generic colors like "red", "blue", etc, you don't need to specify
 the mapping from the universal palette!
+
+* Color Manipulation
+technicolor also provides function to perform basic manipulation of colors,
+using the same ethos of accessing the colors via =technicolor-get-color=. They are
+listed below. More information can be found in docstrings.
+
+- =technicolor-darken=
+- =technicolor-lighten=
+- =technicolor-complement=
+- =technicolor-gradient=
+- =technicolor-saturate=
+- =technicolor-desaturate=
+- =technicolor-blend=
