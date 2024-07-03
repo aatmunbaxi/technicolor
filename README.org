@@ -56,8 +56,8 @@ configurations.
                                                     '((foreground . fg-main)))
                              ...))
 #+end_src
-You can now access the current foreground color with =(technicolor-get-color
-'foreground)= provided your theme matches one of the above. Note we have
+You can now access the current foreground color with =(technicolor-get-color 'foreground)=
+provided your theme matches one of the above. Note we have
 reproduced a subset of the default config provided.
 
 That configuration will match all doom themes and all modus themes; you
