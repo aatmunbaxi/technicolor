@@ -27,8 +27,7 @@ technicolor hopes to solve this issue by letting users define a "universal color
 palette" in which they can access these colors from any currently-set theme
 coming from a list of themes the user specifies with a /single API/.
 
-Configured properly, the above situation would reduce to =(technicolor-get-color
-'foreground)=.
+Configured properly, the above situation would reduce to =(technicolor-get-color 'foreground)=.
 * Using =technicolor=
 technicolor comes with some limited configuration associated to a few popular
 theme packs:
