@@ -1,22 +1,22 @@
 #+title: technicolor
 #+subtitle: (almost) universal programmatic color palette access
 #+author: Aatmun Baxi
-Programmatic access to custom theme color palettes.
 
 * What is this?
-=technicolor= offers a uniform API to let users access a specified collection of
-colors defined in a selection of custom themes.
+=technicolor= offers a uniform API to access a specified collection of colors
+defined in a selection of custom themes.
 
 * The Problem
 Let's say you use DOOM themes and you use the foreground color from the doom
 theme palette somewhere in elisp. That's great! DOOM themes offer an API for that:
 =(doom-color 'fg)=.
 
-But you also use =modus-themes=, and you want to use the modus foreground color.
-Okay, modus offers an API for that too: =(modus-themes-get-color-value 'fg-main)=.
-Oops, the symbol of the color is different, and the function to access the color
-is different. I guess you can add some branches in your elisp that determine if
-the current theme is a DOOM or modus theme...
+But you also use =modus-themes= sometimes, and you want to use the modus
+foreground color. No problem, modus offers an API too:
+=(modus-themes-get-color-value 'fg-main)=. Oops, the symbol of the color is
+different, and the function to access the color is different. I guess you can
+add some branches in your elisp that determine if the current theme is a DOOM or
+modus theme...
 
 ..except you also sometimes use =catppuccin-theme=, and =ef-themes=, and...
 
@@ -27,20 +27,20 @@ technicolor hopes to solve this issue by letting users define a "universal color
 palette" in which they can access these colors from any currently-set theme
 coming from a list of themes the user specifies with a /single API/.
 
-Configured properly, the above situation would simply require =(technicolor-get-color 'foreground)=.
+Configured properly, the above situation would reduce to =(technicolor-get-color
+'foreground)=.
 * Using =technicolor=
-technicolor comes with some minimal configuration associated to a few popular
-themes and theme packs:
+technicolor comes with some limited configuration associated to a few popular
+theme packs:
 - [[https://github.com/doomemacs/themes][DOOM themes]]
 - Prot's themes (modus-, ef-, standard-)
 - [[https://github.com/catppuccin/emacs][catppuccin theme]]
 
-These are good starting points for configuration, but the user should still peer
-into the color palettes of the themes they have and decide how they want to map
-colors. Here is an example:
+These are good starting points, but the user should still peer into the color
+palettes and decide how they want to map colors. Here is an example:
 
 Let's say you want to access the foreground color in elisp for the DOOM themes
-and modus themes. You can set these colors in the =technicolor-colors= list:
+and modus themes. You can set this in the =technicolor-colors= list:
 #+begin_src emacs-lisp
   (setq technicolor-colors '(foreground))
 #+end_src
@@ -48,48 +48,45 @@ The theme's above have the following accessors we can use:
 - Doom themes :: =doom-color=
 - Prot themes :: =*-themes-get-color-value=
 
-Now the doom themes use the symbols =fg= and for foreground, while Prot uses
-=fg-main=, so we have to map our "universal" palette name to these values in their
-respective configurations.
+The DOOM themes use =fg= for the foreground color, while Prot uses =fg-main=, so we
+map our "universal" palette name =foreground= to these symbols in their
+configurations.
 #+begin_src emacs-lisp
   (setq technicolor-themes '(("^doom-.*" doom-color '((foreground . fg)))
                              ("^modus-.*" modus-themes-get-color-value
                                                     '((foreground . fg-main)))
                              ...))
 #+end_src
-After this variable has been set, you can now access the foreground color of any
-of these themes with =(technicolor-get-color 'foreground)= while they are loaded.
-Note we have reproduced a subset of the default config provided by technicolor
-for these themes.
+You can now access the current foreground color with =(technicolor-get-color
+'foreground)= provided your theme matches one of the above. Note we have
+reproduced a subset of the default config provided.
 
-By default, the above configurations will match all doom themes and all modus
-themes, but you can set per-theme rules on color mappings from the universal
-palette by changing the regex.
+That configuration will match all doom themes and all modus themes; you
+can set per-theme rules on color mappings from the universal palette by refining
+the regex:
 #+begin_src emacs-lisp
   ' ...
     ("^modus-operandi" modus-themes-get-color-value '((mappings . here)))
     (("^modus-vivendi" modus-themes-get-color-value '((different . mappings)))
      ...)
     #+end_src
-and the rules we specify would apply accordingly.
-
-You may extend the value of =technicolor-colors= to any colors that you'd like to
-use. Provided you give appropriate mappings for each theme, technicolor will
+Extend the value of =technicolor-colors= to any colors that you'd like to
+use. If you give appropriate mappings for each group of themes, technicolor will
 find them.
 
 Note that if /all/ of your themes provide the same symbol for a certain color, as
 is common for generic colors like "red", "blue", etc, you don't need to specify
-the mapping from the universal palette!
+the mapping from the universal palette (but they should still be in =technicolor-colors=).
 
-** Theme color accessors
-technicolor depends on the themes' /accessors/ to retrieve colors. An accessor for
-a color should take in a color symbol and return the hexadecimal color that the
-theme defines for that color, or nil if no such color exists in the palette.
+** Theme accessors
+technicolor depends on a theme's /accessor/ to retrieve colors. An accessor for a
+color should take in a color symbol and return the hexadecimal color that the
+theme defines for that color, or =nil= or =unspecified= if no such color exists in
+the palette. DOOM themes and Prot's themes ship with their own accessors.
 
-DOOM themes and Prot's themes ship with their own accessors. If the theme you
-want to include does not come with one, you will have to write your own. With
-varying degrees of munging, this is always possible (e.g. the catppuccin color
-accessor defined in the repo).
+If the theme you want to include does include one, you will have to write
+your own. With varying degrees of munging, this is possible (e.g. the
+catppuccin color accessor defined in =technicolor.el=).
 * Color Manipulation
 technicolor also provides function to perform basic manipulation of colors,
 using the same ethos of accessing the colors via =technicolor-get-color=. They are
