@@ -86,6 +86,24 @@ the palette. DOOM themes and Prot's themes ship with their own accessors.
 If the theme you want to include does include one, you will have to write
 your own. With varying degrees of munging, this is possible (e.g. the
 catppuccin color accessor defined in =technicolor.el=).
+
+* Installation
+Via =straight=:
+#+begin_src emacs-lisp
+  (straight-use-package
+   '(technicolor :type git :host github :repo "aatmunbaxi/technicolor"))
+#+end_src
+
+or for DOOM emacs users in your =packages.el=:
+#+begin_src emacs-lisp
+(package! technicolor :recipe (:host github "aatmunbaxi/technicolor"))
+#+end_src
+
+If your package manager does not support git recipes, you can =git clone= and evaluate
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "path/to/technicolor")
+  (require 'technicolor)
+#+end_src
 * Color Manipulation
 technicolor also provides function to perform basic manipulation of colors,
 using the same ethos of accessing the colors via =technicolor-get-color=. They are
