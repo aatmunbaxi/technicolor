@@ -148,9 +148,8 @@ Does so by matches the regexes in the cars of elements in
     (pcase-dolist  (`(,theme-rx ,theme-color-fun ,theme-mapping) technicolor-themes)
       (when (string-match theme-rx theme-name)
         (setq data `(,theme-rx ,theme-color-fun ,theme-mapping))))
-    (if data
-        data
-      (user-error "%s has no associated data in `technicolor-themes'" theme))))
+    data))
+
 
 
 (defun technicolor--color-to-hex (col)
@@ -191,16 +190,19 @@ Return `unspecified' otherwise."
   "Get COLOR from current theme as specified by `technicolor-themes'.
 
   COLOR should appear in `technicolor-colors' or be universally
-available in all themes known to technicolor."
+available in all themes known to technicolor. Return `unspecified'
+if theme or color is not recognized. This is for safety in case
+this function is used in a face definition, where it is safe to
+use `unspecified'."
   (cond ((and (not (null color)) (symbolp color))
          (pcase-let* ((`(_  ,accessor ,color-mapping) (technicolor--get-theme-data (car custom-enabled-themes)))
                       (theme-color (if (assoc color color-mapping)
                                        (alist-get color color-mapping)
                                      color)))
-           (let ((col (funcall accessor theme-color)))
-             (if (or (equal col 'unspecified) (null col))
-                 'unspecified
-               col))))
+           (if-let ((col (when accessor
+                           (funcall accessor theme-color))))
+               col
+             'unspecified)))
         ((string-prefix-p "#" color) color)))
 
 
@@ -215,9 +217,9 @@ of either of the above."
          (mapcar (lambda (col) (technicolor-darken col alpha)) color))
         ((and color (symbolp color))
          (technicolor--with-technicolor-color color
-                                              (technicolor--color-to-hex
-                                               (color-darken-name
-                                                (technicolor-get-color color) alpha))))
+           (technicolor--color-to-hex
+            (color-darken-name
+             (technicolor-get-color color) alpha))))
         ((string-prefix-p "#" color) (technicolor--color-to-hex (color-darken-name color alpha)))))
 
 
@@ -233,7 +235,7 @@ of either of the above."
 (defun technicolor-complement (color)
   "Return hexadecimal complement of COLOR."
   (technicolor--with-technicolor-color color
-                                       (technicolor--color-to-hex (color-complement (technicolor-get-color color)))))
+    (technicolor--color-to-hex (color-complement (technicolor-get-color color)))))
 
 ;;;###autoload
 (defun technicolor-gradient (start stop step-nums)
@@ -241,11 +243,11 @@ of either of the above."
 
 Return list of colors in gradient of length STEP-NUMS."
   (technicolor--with-technicolor-colors  `(,start ,stop)
-                                         (let ((-start (technicolor-get-color start))
-                                               (-stop (technicolor-get-color stop)))
-                                           (mapcar  #'technicolor--color-to-hex
-                                                    (color-gradient (color-name-to-rgb -start)
-                                                                    (color-name-to-rgb -stop) step-nums)))))
+    (let ((-start (technicolor-get-color start))
+          (-stop (technicolor-get-color stop)))
+      (mapcar  #'technicolor--color-to-hex
+               (color-gradient (color-name-to-rgb -start)
+                               (color-name-to-rgb -stop) step-nums)))))
 
 ;;;###autoload
 (defun technicolor-saturate (color alpha)
@@ -254,9 +256,9 @@ Return list of colors in gradient of length STEP-NUMS."
          (mapcar (lambda (col) (technicolor-saturate col alpha)) color))
         ((and color (symbolp color))
          (technicolor--with-technicolor-color color
-                                              (technicolor--color-to-hex
-                                               (color-saturate-name
-                                                (technicolor-get-color color) alpha))))
+           (technicolor--color-to-hex
+            (color-saturate-name
+             (technicolor-get-color color) alpha))))
         ((string-prefix-p "#" color) (technicolor--color-to-hex (color-darken-name color alpha)))))
 
 
