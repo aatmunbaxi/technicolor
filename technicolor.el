@@ -1,4 +1,4 @@
-;;; technicolor.el (almost) universal programmatic color paletta access -*- lexical-binding: t; -*-
+;;; technicolor.el --- Summary: programmatic color palette access -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2024 Aatmun Baxi
 ;;
@@ -15,9 +15,9 @@
 ;;
 ;;; Commentary:
 ;;
-;; Many custom emacs themes provide their own color palettes as a
+;; Many custom Emacs themes provide their own color palettes as a
 ;; variable or collection of variables. Unfortunately for users who enjoy using
-;; theme-specific colors in various parts of emacs, there is no
+;; theme-specific colors in various parts of Emacs, there is no
 ;; universal way to access these colors programmatically. Some theme
 ;; collections define their own functions to access colors via elisp,
 ;; but these solutions are not homogeneous across theme collections.
@@ -32,34 +32,43 @@
 ;; In addition, it provides an abstraction above the `color' library
 ;; for basic color manipulation, allowing for more ergonomic retrieval
 ;; and usage of theme-specific colors.
-;;
+
 ;;; Code:
 
+;;; Requirements:
+
+(require 'cl-lib)
+(require 'color)
+
+;;; Vars
 (defgroup technicolor nil
   "Almost univeral color palette access."
   :group 'technicolor)
 
-;; TODO make this one big variable like in fontaine?
 (defcustom technicolor-themes nil
-  "List of technicolor themes, their accessors, and palette mappings.
+  "List of themes, their accessors, and palette mappings.
 
-Each entry in this list should contain the following:
+Each entry in this list is of the form (regex accessor mappings)
+where:
 
-1. Regex matching a theme or class of themes
-2. Unqouted symbol of function that will access colors
-   An accessor should take in the symbol representing a color
-and return the string representation of that color or nil (or some fallback)
-if the color symbol is not found int he theme palette.
-3. An alist of colors that need be mapped from `technicolor-colors'
-to the names of the colors you want those to correspond to.
-If all your themes implement a certain color, then you can omit
-them from this list for each entry.
+1. regex: Regex matching a theme or class of themes
+2. accessor: Unqouted symbol of function that will access colors.
+An accessor should take in the symbol
+representing a color and return the string representation of that
+color or the symbol `unspecified' (or some fallback color) if the
+color symbol is not found in the theme palette.
+3. mappings: An alist of colors that need be mapped from
+`technicolor-colors' to the names of the colors you want in the
+theme.
 
-For example in a theme `foo', with accessor `foo-get-color', if
-you want the color `red' in `technicolor-colors' to map to
-`foo-bright-red', the entry for `foo' might be
+If all your themes implement a certain color, then you
+can omit them from this list for each entry.
 
-`'(\"^foo-.*\" foo-get-color ((red . foo-bright-red)))'"
+For example in a theme collection `foo', with accessor `foo-themes-get-color',
+ if you want the color `red' in `technicolor-colors' to map to
+`foo-theme-bright-red', the entry for `foo' themes might be
+
+`'(\"^foo-.*\" foo-themes-get-color ((red . foo-theme-bright-red)))'"
   :type '(list (list symbol))
   :group 'technicolor)
 
@@ -96,21 +105,44 @@ Please note that these themes use some colorful names for all the other colors,
 so heavy customization might be needed.")
 
 (defcustom technicolor-colors nil
-  "List of colors in universal palette that can be sensibly accessed
-in all themes matched in `technicolor-themes-alist'."
+  "List of colors in universal palette that can be accessed.
+
+These should be symbols representing colors that can all
+be sensibly accessed in the themes matched in `technicolor-themes'."
   :type '(list symbol)
   :group 'technicolor)
 
 
-(require 'color)
+
+;;; Property functions
+
+(defun technicolor--valid-color-p (color)
+  "Determine if COLOR is a valid element of a palette."
+  (let ((col (technicolor-get-color color)))
+    (not (or (null col) (equal col 'unspecified)))))
+
+(defun technicolor--invalid-color-p (color)
+  "Determine if COLOR is a valid element of a palette."
+  (not (technicolor--valid-color-p color)))
+
+
+
+;;; Private Functions
 
 (defun technicolor--get-catppuccin-color (color)
-  (let ((ctp-theme-colors (intern
-                           (concat "catppuccin-" (symbol-name catppuccin-flavor) "-colors"))))
-    (alist-get color (eval ctp-theme-colors))))
+  "Get catppuccin COLOR."
+  (if (boundp 'catppuccin-flavor)
+      (let ((ctp-theme-colors (intern
+                               (concat "catppuccin-" (symbol-name catppuccin-flavor) "-colors"))))
+        (alist-get color (eval ctp-theme-colors)))
+    'unspecified))
 
 
 (defun technicolor--get-theme-data (theme)
+  "Get theme data for theme name THEME.
+
+Does so by matches the regexes in the cars of elements in
+`technicolor-themes'."
   (let ((theme-name (symbol-name theme))
         (data nil))
     (pcase-dolist  (`(,theme-rx ,theme-color-fun ,theme-mapping) technicolor-themes)
@@ -119,6 +151,40 @@ in all themes matched in `technicolor-themes-alist'."
     (if data
         data
       (user-error "%s has no associated data in `technicolor-themes'" theme))))
+
+
+(defun technicolor--color-to-hex (col)
+  "Convert a color COL to 12 bit hexadecimal.
+
+COL can be a hexadecimal string of arbitrary bit depth or list of r g b
+color values."
+  (cond ((and col (listp col))
+         (pcase col
+           (`(,r ,g ,b) (color-rgb-to-hex r g b 2))))
+        ((string-prefix-p "#" col)
+         (technicolor--color-to-hex (color-name-to-rgb col)))))
+
+
+;;; Macros
+
+(defmacro technicolor--with-technicolor-color (color form)
+  "Execute FORM when COLOR is a valid (i.e. not `unspecified') color.
+Return `unspecified' otherwise."
+  (declare (indent 1))
+  `(if (technicolor--valid-color-p ,color)
+       ,form
+     'unspecified))
+
+(defmacro technicolor--with-technicolor-colors (colors form)
+  "Execute FORM if all values of COLORS are valid colors.
+Return `unspecified' otherwise."
+  (declare (indent 1))
+  `(if (cl-notany #'technicolor--invalid-color-p ,colors)
+       ,form
+     'unspecified))
+
+
+;;; Public functions
 
 ;;;###autoload
 (defun technicolor-get-color (color)
@@ -131,21 +197,13 @@ available in all themes known to technicolor."
                       (theme-color (if (assoc color color-mapping)
                                        (alist-get color color-mapping)
                                      color)))
-           (funcall accessor theme-color)))
+           (let ((col (funcall accessor theme-color)))
+             (if (or (equal col 'unspecified) (null col))
+                 'unspecified
+               col))))
         ((string-prefix-p "#" color) color)))
 
 
-
-(defun technicolor--color-to-hex (col)
-  "Convert a color COL 12 bit hexadecimal.
-
-COL can be a hexadecimal string of arbitrary bit depth or list of r g b
-color values."
-  (cond ((and col (listp col))
-         (pcase col
-           (`(,r ,g ,b) (color-rgb-to-hex r g b 2))))
-        ((string-prefix-p "#" col)
-         (technicolor--color-to-hex (color-name-to-rgb col)))))
 
 ;;;###autoload
 (defun technicolor-darken (color alpha)
@@ -154,12 +212,14 @@ color values."
 COLOR can be a symbol in `technicolor-colors', a hexadecimal string, or list
 of either of the above."
   (cond ((listp color)
-         (mapcar (lambda (col alpha) (technicolor-darken col alpha)) color))
+         (mapcar (lambda (col) (technicolor-darken col alpha)) color))
         ((and color (symbolp color))
-         (technicolor--color-to-hex
-          (color-darken-name
-           (technicolor-get-color color) alpha)))
+         (technicolor--with-technicolor-color color
+                                              (technicolor--color-to-hex
+                                               (color-darken-name
+                                                (technicolor-get-color color) alpha))))
         ((string-prefix-p "#" color) (technicolor--color-to-hex (color-darken-name color alpha)))))
+
 
 ;;;###autoload
 (defun technicolor-lighten (color alpha)
@@ -172,28 +232,42 @@ of either of the above."
 ;;;###autoload
 (defun technicolor-complement (color)
   "Return hexadecimal complement of COLOR."
-  (technicolor--color-to-hex (color-complement (technicolor-get-color color))))
+  (technicolor--with-technicolor-color color
+                                       (technicolor--color-to-hex (color-complement (technicolor-get-color color)))))
 
 ;;;###autoload
 (defun technicolor-gradient (start stop step-nums)
-  (let ((-start (technicolor-get-color start))
-        (-stop (technicolor-get-color stop)))
-    (mapcar #'technicolor--color-to-hex
-            (color-gradient (color-name-to-rgb -start) (color-name-to-rgb -stop) step-nums))))
+  "Generate gradient from START color to STOP color.
+
+Return list of colors in gradient of length STEP-NUMS."
+  (technicolor--with-technicolor-colors  `(,start ,stop)
+                                         (let ((-start (technicolor-get-color start))
+                                               (-stop (technicolor-get-color stop)))
+                                           (mapcar  #'technicolor--color-to-hex
+                                                    (color-gradient (color-name-to-rgb -start)
+                                                                    (color-name-to-rgb -stop) step-nums)))))
 
 ;;;###autoload
 (defun technicolor-saturate (color alpha)
   "Saturate COLOR by ALPHA percent."
-  (technicolor--color-to-hex (color-saturate-name (technicolor-get-color color) alpha)))
+  (cond ((listp color)
+         (mapcar (lambda (col) (technicolor-saturate col alpha)) color))
+        ((and color (symbolp color))
+         (technicolor--with-technicolor-color color
+                                              (technicolor--color-to-hex
+                                               (color-saturate-name
+                                                (technicolor-get-color color) alpha))))
+        ((string-prefix-p "#" color) (technicolor--color-to-hex (color-darken-name color alpha)))))
+
 
 ;;;###autoload
 (defun technicolor-desaturate (color alpha)
   "Desturate COLOR by ALPHA percent."
-  (technicolor--color-to-hex (color-saturate-name (technicolor-get-color color) (- alpha))))
+  (technicolor-saturate color (- alpha)))
+
 
 ;; TODO requiring `cl-lib' for just one function is overkill
 ;; either lean into it or rework the function
-(require 'cl-lib)
 ;; stolen from `doom-themes'
 (defun technicolor-blend (color1 color2 alpha)
   "Blend two colors COLOR1 and COLOR2 by percentage ALPHA."
