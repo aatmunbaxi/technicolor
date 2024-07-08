@@ -1,10 +1,9 @@
 #+title: technicolor
 #+subtitle: (almost) universal programmatic color palette access
-#+author: Aatmun Baxi
 
 * What is this?
 =technicolor= offers a uniform API to access a specified collection of colors
-defined in a selection of custom themes.
+defined in your currently-enabled theme.
 
 * The Problem
 Let's say you use DOOM themes and you use the foreground color from the doom
@@ -96,7 +95,7 @@ Via =straight=:
 
 or for DOOM emacs users in your =packages.el=:
 #+begin_src emacs-lisp
-(package! technicolor :recipe (:host github "aatmunbaxi/technicolor"))
+(package! technicolor :recipe (:host github :repo "aatmunbaxi/technicolor"))
 #+end_src
 
 If your package manager does not support git recipes, you can =git clone= and evaluate
@@ -105,10 +104,9 @@ If your package manager does not support git recipes, you can =git clone= and ev
   (require 'technicolor)
 #+end_src
 * Color Manipulation
-technicolor also provides function to perform basic manipulation of colors,
-using the same ethos of accessing the colors via =technicolor-get-color=. They are
-listed below. Essentially, they wrap the =color= library. More information can be
-found in docstrings.
+technicolor can also perform basic manipulation of colors, using the same ethos
+of accessing the colors via =technicolor-get-color=. They are listed below.
+Essentially, they wrap the =color= library.
 
 - =technicolor-darken=
 - =technicolor-lighten=
