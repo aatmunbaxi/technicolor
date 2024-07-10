@@ -68,7 +68,25 @@ For example in a theme collection `foo', with accessor `foo-themes-get-color',
  if you want the color `red' in `technicolor-colors' to map to
 `foo-theme-bright-red', the entry for `foo' themes might be
 
-`'(\"^foo-.*\" foo-themes-get-color ((red . foo-theme-bright-red)))'"
+`'(\"^foo-.*\" foo-themes-get-color ((red . foo-theme-bright-red)))'
+
+Loaded with the default configurations provided in `technicolor',
+the value could be
+
+`'((\"^doom-.*\" doom-color ((foreground . fg) (background . bg)))
+   (\"^ef-.*\" ef-themes-get-color-value
+     ((foreground . fg-main) (background . bg-main)))
+   (\"^modus-.*\" modus-themes-get-color-value
+     ((foreground . fg-main) (background . bg-main)))
+   (\"^standard-.*\" standard-themes-get-color-value
+     ((foreground . fg-main) (background . bg-main)))
+   (\"^catppuccin\" technicolor--get-catppuccin-color
+     ((foreground . text) (background . base))))
+
+The above configuration is sufficient to access the foreground
+and background colors of DOOM themes, Prot's themes, and
+catppuccin themes. It is recommended that you use
+this as a starting point."
   :type '(list (list symbol))
   :group 'technicolor)
 
@@ -76,36 +94,39 @@ For example in a theme collection `foo', with accessor `foo-themes-get-color',
 (defvar technicolor-doom-themes-data
   '("^doom-.*" doom-color ((foreground . fg)
                            (background . bg)))
-  "Default configuration for `doom-themes'.")
+  "Starting configuration for `doom-themes'.")
 
 ;;;###autoload
 (defvar technicolor-modus-themes-data
   '("^modus-.*" modus-themes-get-color-value ((foreground . fg-main)
                                               (background . bg-main)))
-  "Default configuration for `modus-themes'.")
+  "Starting configuration for `modus-themes'.")
 
 ;;;###autoload
 (defvar technicolor-ef-themes-data
   '("^ef-.*" ef-themes-get-color-value ((foreground . fg-main)
                                         (background . bg-main)))
-  "Default configuration for `ef-themes'.")
+  "Starting configuration for `ef-themes'.")
 
 ;;;###autoload
 (defvar technicolor-standard-themes-data
   '("^standard-.*" standard-themes-get-color-value ((foreground . fg-main)
                                                     (background . bg-main)))
-  "Default configuration for `standard-themes'.")
+  "Starting configuration for `standard-themes'.")
 
 ;;;###autoload
 (defvar technicolor-catppuccin-themes-data
   '("^catppuccin" technicolor--get-catppuccin-color ((foreground . text)
                                                      (background . base)))
-  "Default configuration for `catppuccin-themes'.
-Please note that these themes use some colorful names for all the other colors,
-so heavy customization might be needed.")
+  "Starting configuration for `catppuccin-themes'.
+Please note that these themes use some colorful (no pun intended) names
+for all the other colors, so heavy customization might be needed.
+
+Inspect `catppuccin-*-colors' variables for a list of colors
+implemented in the theme.")
 
 (defcustom technicolor-colors nil
-  "List of colors in universal palette that can be accessed.
+  "List of colors in universal palette.
 
 These should be symbols representing colors that can all
 be sensibly accessed in the themes matched in `technicolor-themes'."
@@ -139,7 +160,7 @@ be sensibly accessed in the themes matched in `technicolor-themes'."
 
 
 (defun technicolor--get-theme-data (theme)
-  "Get theme data for theme name THEME.
+  "Get theme data for THEME.
 
 Does so by matches the regexes in the cars of elements in
 `technicolor-themes'."
@@ -182,7 +203,6 @@ Return `unspecified' otherwise."
        ,form
      'unspecified))
 
-
 ;;; Public functions
 
 ;;;###autoload
@@ -190,9 +210,9 @@ Return `unspecified' otherwise."
   "Get COLOR from current theme as specified by `technicolor-themes'.
 
   COLOR should appear in `technicolor-colors' or be universally
-available in all themes known to technicolor. Return `unspecified'
-if theme or color is not recognized. This is for safety in case
-this function is used in a face definition, where it is safe to
+available in all themes matched by technicolor. Return `unspecified'
+if theme or color is not recognized. This is in case
+this function is used in a face customization, where it is safe to
 use `unspecified'."
   (cond ((and (not (null color)) (symbolp color))
          (pcase-let* ((`(_  ,accessor ,color-mapping) (technicolor--get-theme-data (car custom-enabled-themes)))
@@ -211,7 +231,7 @@ use `unspecified'."
 (defun technicolor-darken (color alpha)
   "Darken COLOR by ALPHA percent.
 
-COLOR can be a symbol in `technicolor-colors', a hexadecimal string, or list
+COLOR is a symbol in `technicolor-colors', a hexadecimal string, or list
 of either of the above."
   (cond ((listp color)
          (mapcar (lambda (col) (technicolor-darken col alpha)) color))
@@ -227,7 +247,7 @@ of either of the above."
 (defun technicolor-lighten (color alpha)
   "Lighten COLOR by ALPHA percent.
 
-COLOR can be a symbol in `technicolor-colors', a hexadecimal string, or list
+COLOR is a symbol in `technicolor-colors', a hexadecimal string, or list
 of either of the above."
   (technicolor-darken color (- alpha)))
 
@@ -280,7 +300,7 @@ Return list of colors in gradient of length STEP-NUMS."
 ;; stolen from `doom-themes'
 ;;;###autoload
 (defun technicolor-blend (color1 color2 alpha)
-  "Blend two colors COLOR1 and COLOR2 by percentage ALPHA."
+  "Blend COLOR1 into COLOR2 by ALPHA percent."
   (technicolor--with-technicolor-colors `(,color1 ,color2)
     (cond ((and color1 color2 (symbolp color1) (symbolp color2))
            (technicolor-blend (technicolor-get-color  color1) (technicolor-get-color color2) alpha))
@@ -294,8 +314,6 @@ Return list of colors in gradient of length STEP-NUMS."
                   (cl-loop for it    in (color-name-to-rgb color1)
                            for other in (color-name-to-rgb color2)
                            collect (+ (* (/ alpha 100.0) it) (* other (- 1  (/ alpha 100.0))))))))))
-
-
 
 (provide 'technicolor)
 ;;; technicolor.el ends here
