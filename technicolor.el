@@ -61,6 +61,16 @@ color symbol is not found in the theme palette.
 `technicolor-colors' to the names of the colors you want in the
 theme.
 
+technicolor will use the first match among the regexes, so
+the regexes should be organized from finest to coarsest. E.g.
+`'((\"doom-one-dark\" _ _)
+  (\"doom-one-light\" _ _)
+  (\"doom-onehalf-*\" _ _)
+  (\"modus-vivendi-*\" _ _)
+  (\"doom-*̈\" _ _)
+  (\"modus-*\" _ _)
+...)'
+
 If all your themes implement a certain color, then you
 can omit them from this list for each entry.
 
@@ -167,7 +177,7 @@ Does so by matches the regexes in the cars of elements in
   (let ((theme-name (symbol-name theme))
         (data nil))
     (pcase-dolist  (`(,theme-rx ,theme-color-fun ,theme-mapping) technicolor-themes)
-      (when (string-match theme-rx theme-name)
+      (when (and (string-match theme-rx theme-name) data)
         (setq data `(,theme-rx ,theme-color-fun ,theme-mapping))))
     data))
 
