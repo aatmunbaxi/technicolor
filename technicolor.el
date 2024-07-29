@@ -177,7 +177,7 @@ Does so by matches the regexes in the cars of elements in
   (let ((theme-name (symbol-name theme))
         (data nil))
     (pcase-dolist  (`(,theme-rx ,theme-color-fun ,theme-mapping) technicolor-themes)
-      (when (and (string-match theme-rx theme-name) data)
+      (when (and (string-match theme-rx theme-name) (null data))
         (setq data `(,theme-rx ,theme-color-fun ,theme-mapping))))
     data))
 
