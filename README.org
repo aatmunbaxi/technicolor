@@ -5,6 +5,7 @@
 =technicolor= offers a uniform API to access a specified collection of colors
 defined in your currently-enabled theme.
 
+See this accompanying [[https://aatmunbaxi.netlify.app/comp/dyn_custom_palette_access_technicolor/][blog post]] detailing the problem, solution, and example usage.
 * The Problem
 Let's say you use DOOM themes and you use the foreground color from the doom
 theme palette somewhere in elisp. That's great! DOOM themes offer an API for that:
