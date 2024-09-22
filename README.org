@@ -99,11 +99,12 @@ or for DOOM emacs users in your =packages.el=:
 (package! technicolor :recipe (:host github :repo "aatmunbaxi/technicolor"))
 #+end_src
 
-If your package manager does not support git recipes, you can =git clone= and evaluate
+If your package manager does not support git recipes and you use =use-package=, you can clone the repo and place the following in your configuration:
 #+begin_src emacs-lisp
-  (add-to-list 'load-path "path/to/technicolor")
-  (require 'technicolor)
+  (use-package technicolor
+    :load-path "path/to/cloned/technicolor")
 #+end_src
+along with any =use-package= configuration.
 * Color Manipulation
 technicolor can also perform basic manipulation of colors, using the same ethos
 of accessing the colors via =technicolor-get-color=. They are listed below.
